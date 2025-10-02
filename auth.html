@@ -7,25 +7,41 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div class="container">
-        <h1>أداة "رابِط"</h1>
-        <p>أنشئ حساباً جديداً أو قم بتسجيل الدخول لإدارة صفحتك</p>
-
-        <form id="auth-form">
-            <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-            <input type="password" id="password" placeholder="كلمة المرور" required>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 id="auth-title">تسجيل الدخول</h1>
+            <p id="auth-subtitle">أهلاً بعودتك! أدخل بياناتك للمتابعة.</p>
             
-            <button type="submit" id="signup-btn">إنشاء حساب جديد</button>
-            <button type="button" id="login-btn">تسجيل الدخول</button>
-        </form>
-        
-        <p id="message"></p>
-
+            <form id="auth-form">
+                <div class="input-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" required>
+                </div>
+                
+                <div class="input-group hidden" id="confirm-password-group">
+                    <label for="confirm-password">تأكيد كلمة المرور</label>
+                    <input type="password" id="confirm-password">
+                </div>
+                
+                <button type="submit" id="auth-btn">تسجيل الدخول</button>
+            </form>
+            
+            <p id="message" class="message"></p>
+            
+            <p class="toggle-text" id="toggle-auth">
+                ليس لديك حساب؟ <a href="#">إنشاء حساب جديد</a>
+            </p>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script src="auth.js"></script>
 </body>
+
 </html>
