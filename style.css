@@ -1,0 +1,77 @@
+body {
+    background-color: #f0f2f5; /* لون خلفية رمادي فاتح */
+    font-family: 'Tajawal', sans-serif; /* يمكنك تغيير الخط لاحقاً */
+    color: #1c1e21; /* لون نص داكن */
+    margin-top: 30px;
+}
+
+.container {
+    max-width: 680px;
+    margin: 0 auto; /* هذا يضع المحتوى في منتصف الشاشة */
+    padding: 20px;
+    text-align: center;
+}
+
+#profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; /* هذا يجعل الصورة دائرية */
+    object-fit: cover; /* يضمن أن الصورة تملأ الدائرة بشكل جيد */
+    border: 3px solid white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+h1 {
+    font-size: 24px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+p {
+    font-size: 16px;
+    color: #606770;
+}
+
+.link-box {
+    display: block; /* يجعل الرابط يأخذ سطراً كاملاً */
+    background-color: white;
+    color: #1c1e21;
+    text-decoration: none; /* يزيل الخط تحت الرابط */
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 8px; /* حواف دائرية */
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s; /* تأثير حركة بسيط */
+}
+
+.link-box:hover {
+    transform: scale(1.03); /* يكبر الزر قليلاً عند مرور الماوس عليه */
+}
+
+.link-item-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px; /* مسافة بين الرابط والزر */
+}
+
+.link-item-container .link-box {
+    flex-grow: 1; /* يجعل الرابط يأخذ كل المساحة المتاحة */
+    margin-bottom: 0; /* نزيل الهامش السفلي لأنه موجود في الحاوية */
+}
+
+.delete-btn {
+    background-color: #e4e6eb;
+    color: #4b4f56;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.delete-btn:hover {
+    background-color: #f0f2f5; /* لون أفتح عند مرور الماوس */
+}
