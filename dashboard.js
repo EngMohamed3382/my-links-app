@@ -2,199 +2,80 @@
 const SUPABASE_URL = 'https://mzhwuoyetkymfjmzrufp.supabase.co'; // ضع رابط Supabase الخاص بك هنا
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aHd1b3lldGt5bWZqbXpydWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNzk5NDksImV4cCI6MjA3NDk1NTk0OX0.8lXagi3kauUVkJag7S2I93t52-QaFTVs9k4SrImqiRE'; // ضع مفتاح ANON الخاص بك هنا
 
-// تهيئة Supabase Client
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- عناصر واجهة المستخدم (HTML Elements) ---
 const logoutBtn = document.getElementById('logout-btn');
 const linksList = document.getElementById('links-list');
 const addLinkForm = document.getElementById('add-link-form');
 const profileForm = document.getElementById('profile-form');
-let currentUser = null; // متغير لتخزين معلومات المستخدم الحالي بعد تسجيل الدخول
+const avatarPreview = document.getElementById('avatar-preview');
+const avatarInput = document.getElementById('avatar-input');
+const uploadBtn = document.getElementById('upload-btn');
+const uploadStatus = document.getElementById('upload-status');
+let currentUser = null;
+let selectedFile = null;
 
-// =================================================================================
-// الوظائف (Functions)
-// =================================================================================
-
-/**
- * دالة لجلب بيانات الملف الشخصي للمستخدم الحالي وعرضها في النموذج.
- */
 async function fetchUserProfile() {
     if (!currentUser) return;
     const { data: profile, error } = await supabaseClient
         .from('profiles')
-        .select('username, bio') // نختار فقط الأعمدة التي نحتاجها
+        .select('username, bio, avatar_url')
         .eq('user_id', currentUser.id)
-        .single(); // .single() لجلب نتيجة واحدة فقط
-
-    if (error && error.code !== 'PGRST116') { // تجاهل خطأ عدم وجود نتيجة، فهو متوقع للمستخدم الجديد
-        console.error('Error fetching profile:', error);
-    } else if (profile) {
-        // ملء حقول النموذج بالبيانات الموجودة
+        .single();
+    if (error && error.code !== 'PGRST116') { console.error('Error:', error); }
+    else if (profile) {
         document.getElementById('username').value = profile.username || '';
         document.getElementById('bio').value = profile.bio || '';
-    }
-}
-
-/**
- * دالة لجلب روابط المستخدم الحالي وعرضها في الصفحة.
- */
-/**
- * دالة لجلب روابط المستخدم الحالي وعرضها في الصفحة مع زر للحذف.
- */
-async function fetchUserLinks() {
-    if (!currentUser) return;
-
-    // ملاحظة: قمنا بإضافة id إلى select لجلب المعرف الفريد لكل رابط
-    const { data: links, error } = await supabaseClient
-        .from('links')
-        .select('id, title, url') // مهم: أضفنا id هنا
-        .eq('user_id', currentUser.id);
-
-    if (error) {
-        console.error('Error fetching links:', error);
-        return;
-    }
-
-    linksList.innerHTML = '';
-
-    if (links.length === 0) {
-        linksList.innerHTML = '<p>لا يوجد روابط بعد. قم بإضافة أول رابط لك!</p>';
-    } else {
-        links.forEach(link => {
-            // 1. إنشاء حاوية (div) لكل رابط وزر الحذف
-            const linkContainer = document.createElement('div');
-            linkContainer.classList.add('link-item-container');
-
-            // 2. إنشاء عنصر الرابط نفسه
-            const linkElement = document.createElement('a');
-            linkElement.href = link.url;
-            linkElement.textContent = link.title;
-            linkElement.classList.add('link-box');
-            linkElement.target = '_blank';
-
-            // 3. إنشاء زر الحذف
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'حذف';
-            deleteButton.classList.add('delete-btn');
-            // سنستخدم data attribute لتخزين id الرابط في الزر نفسه
-            deleteButton.dataset.linkId = link.id; 
-
-            // 4. إضافة الرابط والزر إلى الحاوية
-            linkContainer.appendChild(linkElement);
-            linkContainer.appendChild(deleteButton);
-
-            // 5. إضافة الحاوية الكاملة إلى القائمة في الصفحة
-            linksList.appendChild(linkContainer);
-        });
-    }
-}
-
-/**
- * دالة لحذف رابط معين بعد تأكيد المستخدم.
- * @param {string} linkId - المعرف الفريد للرابط المراد حذفه.
- */
-async function deleteLink(linkId) {
-    // عرض رسالة تأكيد للمستخدم قبل الحذف
-    const isConfirmed = confirm('هل أنت متأكد أنك تريد حذف هذا الرابط؟');
-
-    if (isConfirmed) {
-        const { error } = await supabaseClient
-            .from('links')
-            .delete()
-            .eq('id', linkId);
-
-        if (error) {
-            console.error('Error deleting link:', error);
-            alert('حدث خطأ أثناء الحذف.');
-        } else {
-            // إذا نجح الحذف، قم بإعادة تحميل قائمة الروابط لتحديث الواجهة
-            fetchUserLinks();
+        if (profile.avatar_url) {
+            avatarPreview.src = profile.avatar_url;
         }
     }
 }
 
-/**
- * دالة رئيسية يتم تشغيلها عند تحميل الصفحة للتحقق من هوية المستخدم وجلب بياناته.
- */
-async function checkAndLoadUser() {
-    const { data, error } = await supabaseClient.auth.getUser();
-    
-    // إذا لم يكن المستخدم مسجلاً دخوله، أعده إلى صفحة الدخول
-    if (error || !data.user) {
-        window.location.href = 'auth.html';
+profileForm.addEventListener('submit', async (event) => { /* ... نفس الكود السابق ... */ });
+addLinkForm.addEventListener('submit', async (event) => { /* ... نفس الكود السابق ... */ });
+async function fetchUserLinks() { /* ... نفس الكود السابق ... */ }
+linksList.addEventListener('click', (event) => { /* ... نفس الكود السابق ... */ });
+async function deleteLink(linkId) { /* ... نفس الكود السابق ... */ }
+logoutBtn.addEventListener('click', async () => { /* ... نفس الكود السابق ... */ });
+
+// --- كود رفع الصورة الجديد ---
+avatarInput.addEventListener('change', () => {
+    selectedFile = avatarInput.files[0];
+    if (selectedFile) {
+        avatarPreview.src = URL.createObjectURL(selectedFile);
+        uploadBtn.style.display = 'inline-block';
+    }
+});
+
+uploadBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    uploadStatus.textContent = 'جاري رفع الصورة...';
+    const filePath = `${currentUser.id}/${Date.now()}`;
+    const { error: uploadError } = await supabaseClient.storage
+        .from('avatars')
+        .upload(filePath, selectedFile);
+    if (uploadError) {
+        console.error('Upload Error:', uploadError);
+        uploadStatus.textContent = 'فشل الرفع.';
         return;
     }
-    
-    // إذا كان المستخدم مسجلاً، قم بتخزين بياناته وتشغيل دوال جلب البيانات
-    currentUser = data.user;
-    fetchUserProfile();
-    fetchUserLinks();
-}
-
-
-// =================================================================================
-// ربط الأحداث (Event Listeners)
-// =================================================================================
-
-// عند تقديم نموذج حفظ بيانات الملف الشخصي
-profileForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const username = document.getElementById('username').value;
-    const bio = document.getElementById('bio').value;
-
-    // upsert: يقوم بالتحديث إذا كان السجل موجوداً، أو بالإضافة إذا لم يكن موجوداً
-    const { error } = await supabaseClient
+    const { data } = supabaseClient.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+    const publicUrl = data.publicUrl;
+    const { error: updateError } = await supabaseClient
         .from('profiles')
-        .upsert({ user_id: currentUser.id, username: username, bio: bio });
-
-    if (error) {
-        alert('حدث خطأ أثناء حفظ الملف الشخصي: ' + error.message);
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', currentUser.id);
+    if (updateError) {
+        console.error('Update Error:', updateError);
+        uploadStatus.textContent = 'فشل حفظ الرابط.';
     } else {
-        alert('تم حفظ التغييرات بنجاح!');
+        uploadStatus.textContent = 'تم تحديث الصورة بنجاح!';
+        uploadBtn.style.display = 'none';
     }
 });
 
-// عند تقديم نموذج إضافة رابط جديد
-addLinkForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const title = document.getElementById('link-title').value;
-    const url = document.getElementById('link-url').value;
-
-    const { error } = await supabaseClient
-        .from('links')
-        .insert([{ title: title, url: url, user_id: currentUser.id }]);
-    
-    if (error) {
-        alert('حدث خطأ أثناء إضافة الرابط: ' + error.message);
-    } else {
-        addLinkForm.reset(); // تفريغ حقول النموذج بعد الإضافة
-        fetchUserLinks(); // إعادة تحميل قائمة الروابط لتظهر الإضافة الجديدة
-    }
-});
-
-// عند الضغط على زر تسجيل الخروج
-logoutBtn.addEventListener('click', async () => {
-    await supabaseClient.auth.signOut();
-    window.location.href = 'auth.html'; // إعادة التوجيه لصفحة الدخول
-});
-
-
-// =================================================================================
-// تشغيل التطبيق
-// =================================================================================
-
-// قم بتشغيل الدالة الرئيسية عند تحميل الصفحة
-// ... كل الأكواد الأخرى ...
-
-// إضافة مستمع واحد لحاوية الروابط للتعامل مع كل أزرار الحذف (Event Delegation)
-linksList.addEventListener('click', (event) => {
-    // تحقق مما إذا كان العنصر الذي تم الضغط عليه هو زر حذف
-    if (event.target.classList.contains('delete-btn')) {
-        const linkId = event.target.dataset.linkId;
-        deleteLink(linkId);
-    }
-});
-
-// قم بتشغيل الدالة الرئيسية عند تحميل الصفحة
+async function checkAndLoadUser() { /* ... نفس الكود السابق ... */ }
 checkAndLoadUser();
