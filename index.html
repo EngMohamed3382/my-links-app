@@ -7,23 +7,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="welcome-view" class="container">
+        <h1>مرحباً بك في منصتي</h1>
+        <p>هنا يمكنك إنشاء صفحة واحدة تجمع كل روابطك المهمة في مكان واحد.</p>
+        <a href="auth.html" class="link-box welcome-button">🚀 أنشئ صفحتك الآن مجاناً</a>
+        <a href="auth.html" class="link-box welcome-button">🔑 أو قم بتسجيل الدخول</a>
+    </div>
 
-    <div class="container">
+    <div id="profile-view" class="container" style="display: none;">
         <header>
             <img src="https://via.placeholder.com/150" alt="الصورة الشخصية" id="profile-pic">
-            <h1 id="username-h1">اسم المستخدم</h1>
-            <p id="bio-p">نبذة قصيرة عني أو عن طبيعة عملي.</p>
+            <h1 id="username-h1"></h1>
+            <p id="bio-p"></p>
         </header>
 
-    <main id="links-container">
-        <a href="#" class="link-box">🌐 موقعي الإلكتروني</a>
-        <a href="#" class="link-box">📸 حسابي على انستغرام</a>
-        <a href="#" class="link-box">📘 صفحتي على فيسبوك</a>
-    </main>
+        <main id="links-container">
+            </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script src="main.js"></script>
 </body>
+
 </html>
