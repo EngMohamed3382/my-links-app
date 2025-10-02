@@ -32,7 +32,7 @@ async function loadUserProfile(username) {
     const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
         .select('user_id, username, bio, avatar_url')
-        .eq('username', username)
+        .ilike('username', username)
         .single();
 
     if (profileError || !profile) {
@@ -95,3 +95,4 @@ if (urlUsername) {
     welcomeView.style.display = 'block';
     profileView.style.display = 'none';
 }
+
