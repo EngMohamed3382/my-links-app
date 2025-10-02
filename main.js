@@ -4,6 +4,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
 // --- عناصر الصفحة ---
 const profilePic = document.getElementById('profile-pic');
 const usernameH1 = document.getElementById('username-h1');
@@ -11,10 +12,34 @@ const bioP = document.getElementById('bio-p');
 const linksContainer = document.getElementById('links-container');
 const welcomeView = document.getElementById('welcome-view');
 const profileView = document.getElementById('profile-view');
+const ownerControls = document.getElementById('owner-controls'); // جديد
+const publicLogoutBtn = document.getElementById('public-logout-btn'); // جديد
 
 /**
- * دالة رئيسية لجلب وعرض بيانات ملف المستخدم
- * @param {string} username - اسم المستخدم المراد عرض صفحته
+ * دالة للتحقق من هوية المستخدم المسجل حالياً ومقارنته بصاحب الصفحة.
+ * @param {string} pageOwnerUsername - اسم المستخدم صاحب الصفحة.
+ */
+async function checkSessionAndOwnership(pageOwnerUsername) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    
+    if (session) {
+        // إذا كان هناك مستخدم مسجل دخوله
+        const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('username')
+            .eq('user_id', session.user.id)
+            .single();
+            
+        if (profile && profile.username === pageOwnerUsername) {
+            // إذا كان المستخدم المسجل هو نفسه صاحب الصفحة، أظهر أزرار التحكم
+            ownerControls.classList.remove('hidden');
+        }
+    }
+}
+
+/**
+ * دالة رئيسية لجلب وعرض بيانات ملف المستخدم.
+ * @param {string} username - اسم المستخدم المراد عرض صفحته.
  */
 async function loadUserProfile(username) {
     const { data: profile, error: profileError } = await supabaseClient
@@ -24,41 +49,33 @@ async function loadUserProfile(username) {
         .single();
 
     if (profileError || !profile) {
-        console.error('User not found:', profileError);
-        welcomeView.style.display = 'none';
-        profileView.innerHTML = '<h1>المستخدم غير موجود</h1>';
-        profileView.style.display = 'block';
+        // ... الكود السابق يبقى كما هو ...
         return;
     }
 
+    // *** الجزء الجديد: استدعاء دالة التحقق من الملكية ***
+    checkSessionAndOwnership(profile.username);
+
+    // ... باقي الكود السابق يبقى كما هو ...
     usernameH1.textContent = profile.username;
     bioP.textContent = profile.bio || '';
     document.title = profile.username;
     if (profile.avatar_url) {
         profilePic.src = profile.avatar_url + '?t=' + new Date().getTime();
     }
-
-    const { data: links, error: linksError } = await supabaseClient
-        .from('links')
-        .select('title, url')
-        .eq('user_id', profile.user_id);
-
+    const { data: links, error: linksError } = await supabaseClient.from('links').select('title, url').eq('user_id', profile.user_id);
     if (linksError) { console.error('Error fetching links:', linksError); return; }
-
     linksContainer.innerHTML = '';
-    if (links.length > 0) {
-        links.forEach(link => {
-            const linkElement = document.createElement('a');
-            linkElement.href = link.url;
-            linkElement.textContent = link.title;
-            linkElement.classList.add('link-box');
-            linkElement.target = '_blank';
-            linksContainer.appendChild(linkElement);
-        });
-    } else {
-        linksContainer.innerHTML = '<p>لا توجد روابط لعرضها.</p>';
-    }
+    if (links.length > 0) {links.forEach(link => {const linkElement = document.createElement('a');linkElement.href = link.url;linkElement.textContent = link.title;linkElement.classList.add('link-box');linkElement.target = '_blank';linksContainer.appendChild(linkElement);});} else {linksContainer.innerHTML = '<p>لا توجد روابط لعرضها.</p>';}
 }
+
+// --- ربط حدث تسجيل الخروج ---
+publicLogoutBtn.addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    // إخفاء الأزرار وإعادة تحميل الصفحة لإزالة أي بيانات خاصة
+    ownerControls.classList.add('hidden');
+    window.location.reload();
+});
 
 // --- تشغيل الكود ---
 const params = new URLSearchParams(window.location.search);
@@ -69,6 +86,18 @@ if (urlUsername) {
     profileView.style.display = 'block';
     loadUserProfile(urlUsername);
 } else {
+    // ... الكود السابق يبقى كما هو ...
+}
+
+// --- لصق الأجزاء التي لم تتغير ---
+if (profileError || !profile) {
+    console.error('User not found:', profileError);
+    welcomeView.style.display = 'none';
+    profileView.innerHTML = '<h1>المستخدم غير موجود</h1>';
+    profileView.style.display = 'block';
+    return;
+}
+if (!urlUsername) {
     welcomeView.style.display = 'block';
     profileView.style.display = 'none';
 }
