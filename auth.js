@@ -2,52 +2,79 @@
 const SUPABASE_URL = 'https://mzhwuoyetkymfjmzrufp.supabase.co'; // ضع رابط Supabase الخاص بك هنا
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aHd1b3lldGt5bWZqbXpydWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNzk5NDksImV4cCI6MjA3NDk1NTk0OX0.8lXagi3kauUVkJag7S2I93t52-QaFTVs9k4SrImqiRE'; // ضع مفتاح ANON الخاص بك هنا
 
-// تهيئة Supabase
-// تم تغيير اسم المتغير إلى supabaseClient لتجنب التضارب
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// الحصول على عناصر النموذج من ملف HTML
+// --- عناصر واجهة المستخدم ---
 const authForm = document.getElementById('auth-form');
-const signupBtn = document.getElementById('signup-btn');
-const loginBtn = document.getElementById('login-btn');
+const authBtn = document.getElementById('auth-btn');
 const messageEl = document.getElementById('message');
+const toggleAuthLink = document.getElementById('toggle-auth');
+const confirmPasswordGroup = document.getElementById('confirm-password-group');
+const authTitle = document.getElementById('auth-title');
+const authSubtitle = document.getElementById('auth-subtitle');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const confirmPasswordInput = document.getElementById('confirm-password');
 
-// --- دالة إنشاء حساب جديد ---
-signupBtn.addEventListener('click', async (event) => {
-    event.preventDefault(); // منع التحديث التلقائي للصفحة
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+let isLoginMode = true; // متغير لتحديد الوضع الحالي (تسجيل دخول أو إنشاء حساب)
 
-    // تم التعديل هنا
-    const { data, error } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password,
-    });
+// --- دالة لتبديل الواجهة بين الوضعين ---
+function toggleMode() {
+    isLoginMode = !isLoginMode; // عكس الوضع الحالي
+    messageEl.textContent = ''; // مسح أي رسائل خطأ قديمة
 
-    if (error) {
-        messageEl.textContent = 'حدث خطأ: ' + error.message;
+    if (isLoginMode) {
+        authTitle.textContent = 'تسجيل الدخول';
+        authSubtitle.textContent = 'أهلاً بعودتك! أدخل بياناتك للمتابعة.';
+        authBtn.textContent = 'تسجيل الدخول';
+        confirmPasswordGroup.classList.add('hidden');
+        toggleAuthLink.innerHTML = 'ليس لديك حساب؟ <a href="#">إنشاء حساب جديد</a>';
     } else {
-        messageEl.textContent = 'تم إرسال رابط التأكيد إلى بريدك الإلكتروني. الرجاء التحقق منه.';
-        authForm.reset(); // تفريغ حقول النموذج
+        authTitle.textContent = 'إنشاء حساب جديد';
+        authSubtitle.textContent = 'خطوة واحدة تفصلك عن صفحتك الخاصة.';
+        authBtn.textContent = 'إنشاء حساب';
+        confirmPasswordGroup.classList.remove('hidden');
+        toggleAuthLink.innerHTML = 'لديك حساب بالفعل؟ <a href="#">تسجيل الدخول</a>';
     }
+}
+
+// ربط دالة التبديل بالضغط على الرابط
+toggleAuthLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    toggleMode();
 });
 
-// --- دالة تسجيل الدخول ---
-loginBtn.addEventListener('click', async (event) => {
-    event.preventDefault(); // منع التحديث التلقائي للصفحة
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+// --- التعامل مع تقديم النموذج ---
+authForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    messageEl.textContent = ''; // مسح رسائل الخطأ
 
-    // تم التعديل هنا
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password,
-    });
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
-    if (error) {
-        messageEl.textContent = 'خطأ في تسجيل الدخول: ' + error.message;
+    if (isLoginMode) {
+        // --- منطق تسجيل الدخول ---
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+            messageEl.textContent = 'خطأ في تسجيل الدخول: البريد أو كلمة المرور غير صحيحة.';
+        } else {
+            window.location.href = 'dashboard.html';
+        }
     } else {
-        // إذا نجح تسجيل الدخول، قم بتوجيه المستخدم إلى لوحة التحكم
-        window.location.href = 'dashboard.html';
+        // --- منطق إنشاء حساب جديد ---
+        const confirmPassword = confirmPasswordInput.value;
+        if (password !== confirmPassword) {
+            messageEl.textContent = 'كلمتا المرور غير متطابقتين.';
+            return;
+        }
+        
+        const { error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) {
+            messageEl.textContent = 'حدث خطأ أثناء إنشاء الحساب: ' + error.message;
+        } else {
+            messageEl.style.color = 'green'; // تغيير لون الرسالة للنجاح
+            messageEl.textContent = 'تم إرسال رابط التأكيد إلى بريدك الإلكتروني. الرجاء التحقق منه.';
+            setTimeout(toggleMode, 3000); // العودة لوضع تسجيل الدخول بعد 3 ثوانٍ
+        }
     }
 });
