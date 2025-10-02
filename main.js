@@ -18,7 +18,7 @@ async function loadUserProfile(username) {
     // الخطوة 1: جلب بيانات الملف الشخصي (profile) بناءً على اسم المستخدم
     const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
-        .select('user_id, username, bio')
+        .select('user_id, username, bio, avatar_url')
         .eq('username', username)
         .single();
 
@@ -70,4 +70,5 @@ if (urlUsername) {
     loadUserProfile(urlUsername);
 } else {
     document.body.innerHTML = '<h1>خطأ: لم يتم تحديد اسم المستخدم في الرابط.</h1><p>مثال على رابط صحيح: index.html?user=username</p>';
+
 }
