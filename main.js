@@ -78,7 +78,9 @@ publicLogoutBtn.addEventListener('click', async () => {
 });
 
 // --- تشغيل الكود ---
-const params = new URLSearchParams(window.location.search);
+// الكود الجديد: يقوم بتحويل كل الرابط إلى حروف صغيرة أولاً
+const queryString = window.location.search.toLowerCase();
+const params = new URLSearchParams(queryString);
 const urlUsername = params.get('user');
 
 if (urlUsername) {
@@ -101,3 +103,4 @@ if (!urlUsername) {
     welcomeView.style.display = 'block';
     profileView.style.display = 'none';
 }
+
