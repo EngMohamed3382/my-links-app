@@ -22,13 +22,8 @@ const editLinkUrl = document.getElementById('edit-link-url');
 let currentUser = null;
 let selectedFile = null;
 
-// =================================================================================
-// الدوال الرئيسية (Functions)
-// =================================================================================
+// --- الدوال الرئيسية ---
 
-/**
- * دالة لجلب وعرض روابط المستخدم (مع أزرار التعديل والحذف).
- */
 async function fetchUserLinks() {
     if (!currentUser) return;
     const { data: links, error } = await supabaseClient
@@ -45,25 +40,21 @@ async function fetchUserLinks() {
         links.forEach(link => {
             const linkContainer = document.createElement('div');
             linkContainer.classList.add('link-item-container');
-
             const linkElement = document.createElement('a');
             linkElement.href = link.url;
             linkElement.textContent = link.title;
             linkElement.classList.add('link-box');
             linkElement.target = '_blank';
-
             const editButton = document.createElement('button');
             editButton.textContent = 'تعديل';
             editButton.classList.add('edit-btn');
             editButton.dataset.id = link.id;
             editButton.dataset.title = link.title;
             editButton.dataset.url = link.url;
-
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'حذف';
             deleteButton.classList.add('delete-btn');
             deleteButton.dataset.linkId = link.id;
-
             linkContainer.appendChild(linkElement);
             linkContainer.appendChild(editButton);
             linkContainer.appendChild(deleteButton);
@@ -72,9 +63,6 @@ async function fetchUserLinks() {
     }
 }
 
-/**
- * دالة لجلب وعرض بيانات الملف الشخصي.
- */
 async function fetchUserProfile() {
     if (!currentUser) return;
     const { data: profile, error } = await supabaseClient
@@ -82,47 +70,35 @@ async function fetchUserProfile() {
         .select('username, bio, avatar_url')
         .eq('user_id', currentUser.id)
         .single();
-    if (error && error.code !== 'PGRST116') { console.error('Error:', error); }
+    if (error && error.code !== 'PGRST116') { console.error('Error fetching profile:', error); }
     else if (profile) {
         document.getElementById('username').value = profile.username || '';
         document.getElementById('bio').value = profile.bio || '';
         if (profile.avatar_url) {
-            avatarPreview.src = profile.avatar_url;
+            avatarPreview.src = profile.avatar_url + '?t=' + new Date().getTime();
         }
     }
 }
 
-/**
- * دالة لحذف رابط معين بعد تأكيد المستخدم.
- */
 async function deleteLink(linkId) {
     const isConfirmed = confirm('هل أنت متأكد أنك تريد حذف هذا الرابط؟');
     if (isConfirmed) {
         const { error } = await supabaseClient.from('links').delete().eq('id', linkId);
-        if (error) {
-            alert('حدث خطأ أثناء الحذف.');
-        } else {
-            fetchUserLinks();
-        }
+        if (error) { alert('حدث خطأ أثناء الحذف.'); } else { fetchUserLinks(); }
     }
 }
 
-/**
- * دوال فتح وإغلاق نافذة التعديل.
- */
 function openEditModal(id, title, url) {
     editLinkId.value = id;
     editLinkTitle.value = title;
     editLinkUrl.value = url;
     editModal.classList.remove('hidden');
 }
+
 function closeEditModal() {
     editModal.classList.add('hidden');
 }
 
-/**
- * دالة رئيسية للتحقق من هوية المستخدم وجلب كل بياناته عند تحميل الصفحة.
- */
 async function checkAndLoadUser() {
     const { data, error } = await supabaseClient.auth.getUser();
     if (error || !data.user) {
@@ -134,81 +110,41 @@ async function checkAndLoadUser() {
     fetchUserLinks();
 }
 
-// =================================================================================
-// ربط الأحداث (Event Listeners)
-// =================================================================================
+// --- ربط الأحداث (Event Listeners) ---
 
-// عند تقديم نموذج إضافة رابط جديد
 addLinkForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const title = document.getElementById('link-title').value;
     const url = document.getElementById('link-url').value;
-
-    const { error } = await supabaseClient
-        .from('links')
-        .insert([{ title: title, url: url, user_id: currentUser.id }]);
-    
-    if (error) {
-        alert('حدث خطأ أثناء إضافة الرابط: ' + error.message);
-    } else {
-        addLinkForm.reset();
-        fetchUserLinks(); // إعادة تحميل قائمة الروابط لتظهر الإضافة الجديدة
-    }
+    const { error } = await supabaseClient.from('links').insert([{ title: title, url: url, user_id: currentUser.id }]);
+    if (error) { alert('حدث خطأ أثناء إضافة الرابط: ' + error.message); } else { addLinkForm.reset(); fetchUserLinks(); }
 });
 
-// عند تقديم نموذج حفظ بيانات الملف الشخصي
 profileForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const username = document.getElementById('username').value;
     const bio = document.getElementById('bio').value;
-    const { error } = await supabaseClient
-        .from('profiles')
-        .upsert({ user_id: currentUser.id, username: username, bio: bio });
-    if (error) {
-        alert('حدث خطأ: ' + error.message);
-    } else {
-        alert('تم حفظ التغييرات بنجاح!');
-    }
+    const { error } = await supabaseClient.from('profiles').upsert({ user_id: currentUser.id, username: username, bio: bio });
+    if (error) { alert('حدث خطأ: ' + error.message); } else { alert('تم حفظ التغييرات بنجاح!'); }
 });
 
-// عند تقديم نموذج تعديل الرابط
 editForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const id = editLinkId.value;
     const title = editLinkTitle.value;
     const url = editLinkUrl.value;
-    const { error } = await supabaseClient
-        .from('links')
-        .update({ title: title, url: url })
-        .eq('id', id);
-    if (error) {
-        alert('حدث خطأ أثناء تحديث الرابط.');
-    } else {
-        closeEditModal();
-        fetchUserLinks();
-    }
+    const { error } = await supabaseClient.from('links').update({ title: title, url: url }).eq('id', id);
+    if (error) { alert('حدث خطأ أثناء تحديث الرابط.'); } else { closeEditModal(); fetchUserLinks(); }
 });
 
-// مستمع واحد للتعامل مع أزرار الحذف والتعديل
 linksList.addEventListener('click', (event) => {
-    if (event.target.classList.contains('delete-btn')) {
-        deleteLink(event.target.dataset.linkId);
-    }
-    if (event.target.classList.contains('edit-btn')) {
-        const { id, title, url } = event.target.dataset;
-        openEditModal(id, title, url);
-    }
+    if (event.target.classList.contains('delete-btn')) { deleteLink(event.target.dataset.linkId); }
+    if (event.target.classList.contains('edit-btn')) { const { id, title, url } = event.target.dataset; openEditModal(id, title, url); }
 });
 
-// لإغلاق نافذة التعديل
 cancelEditBtn.addEventListener('click', closeEditModal);
-editModal.addEventListener('click', (event) => {
-    if (event.target === editModal) {
-        closeEditModal();
-    }
-});
+editModal.addEventListener('click', (event) => { if (event.target === editModal) { closeEditModal(); } });
 
-// عند اختيار صورة جديدة
 avatarInput.addEventListener('change', () => {
     selectedFile = avatarInput.files[0];
     if (selectedFile) {
@@ -217,36 +153,22 @@ avatarInput.addEventListener('change', () => {
     }
 });
 
-// عند الضغط على زر رفع الصورة
 uploadBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
     uploadStatus.textContent = 'جاري رفع الصورة...';
     const filePath = `${currentUser.id}/${Date.now()}`;
     const { error: uploadError } = await supabaseClient.storage.from('avatars').upload(filePath, selectedFile);
-    if (uploadError) {
-        uploadStatus.textContent = 'فشل الرفع.';
-        return;
-    }
+    if (uploadError) { uploadStatus.textContent = 'فشل الرفع.'; return; }
     const { data } = supabaseClient.storage.from('avatars').getPublicUrl(filePath);
-    const { error: updateError } = await supabaseClient
-        .from('profiles')
-        .update({ avatar_url: data.publicUrl })
-        .eq('user_id', currentUser.id);
-    if (updateError) {
-        uploadStatus.textContent = 'فشل حفظ الرابط.';
-    } else {
-        uploadStatus.textContent = 'تم تحديث الصورة بنجاح!';
-        uploadBtn.style.display = 'none';
-    }
+    const { error: updateError } = await supabaseClient.from('profiles').update({ avatar_url: data.publicUrl }).eq('user_id', currentUser.id);
+    if (updateError) { uploadStatus.textContent = 'فشل حفظ الرابط.'; } else { uploadStatus.textContent = 'تم تحديث الصورة بنجاح!'; uploadBtn.style.display = 'none'; fetchUserProfile(); }
 });
 
-// عند الضغط على زر تسجيل الخروج
 logoutBtn.addEventListener('click', async () => {
     await supabaseClient.auth.signOut();
     window.location.href = 'auth.html';
 });
 
-// =================================================================================
-// تشغيل التطبيق
-// =================================================================================
+// --- تشغيل التطبيق ---
 checkAndLoadUser();
+
