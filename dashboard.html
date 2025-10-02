@@ -52,9 +52,29 @@
 
         </div>
     </main>
-
+  <div id="edit-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>تعديل الرابط</h2>
+            <form id="edit-link-form">
+                <input type="hidden" id="edit-link-id">
+                <div class="input-group">
+                    <label for="edit-link-title">عنوان الرابط</label>
+                    <input type="text" id="edit-link-title" required>
+                </div>
+                <div class="input-group">
+                    <label for="edit-link-url">الرابط الكامل</label>
+                    <input type="url" id="edit-link-url" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-edit-btn">إلغاء</button>
+                    <button type="submit">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
