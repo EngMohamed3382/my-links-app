@@ -6,16 +6,17 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- عناصر الصفحة ---
 const profilePic = document.getElementById('profile-pic');
-const usernameH1 = document.getElementById('username-h1'); // سنعطي id جديد لاسم المستخدم
-const bioP = document.getElementById('bio-p'); // سنعطي id جديد للنبذة
-const linksContainer = document.getElementById('links-container'); // سنعطي id جديد لحاوية الروابط
+const usernameH1 = document.getElementById('username-h1');
+const bioP = document.getElementById('bio-p');
+const linksContainer = document.getElementById('links-container');
+const welcomeView = document.getElementById('welcome-view');
+const profileView = document.getElementById('profile-view');
 
 /**
  * دالة رئيسية لجلب وعرض بيانات ملف المستخدم
  * @param {string} username - اسم المستخدم المراد عرض صفحته
  */
 async function loadUserProfile(username) {
-    // الخطوة 1: جلب بيانات الملف الشخصي (profile) بناءً على اسم المستخدم
     const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
         .select('user_id, username, bio, avatar_url')
@@ -24,28 +25,27 @@ async function loadUserProfile(username) {
 
     if (profileError || !profile) {
         console.error('User not found:', profileError);
-        document.body.innerHTML = '<h1>المستخدم غير موجود</h1>';
+        welcomeView.style.display = 'none';
+        profileView.innerHTML = '<h1>المستخدم غير موجود</h1>';
+        profileView.style.display = 'block';
         return;
     }
 
-    // الخطوة 2: تحديث معلومات الملف الشخصي في الصفحة
     usernameH1.textContent = profile.username;
-    bioP.textContent = profile.bio || 'لا توجد نبذة شخصية.';
-    document.title = profile.username; // تغيير عنوان تبويب الصفحة
+    bioP.textContent = profile.bio || '';
+    document.title = profile.username;
+    if (profile.avatar_url) {
+        profilePic.src = profile.avatar_url + '?t=' + new Date().getTime();
+    }
 
-    // الخطوة 3: جلب روابط المستخدم (links) باستخدام user_id الذي حصلنا عليه
     const { data: links, error: linksError } = await supabaseClient
         .from('links')
         .select('title, url')
         .eq('user_id', profile.user_id);
 
-    if (linksError) {
-        console.error('Error fetching links:', linksError);
-        return;
-    }
+    if (linksError) { console.error('Error fetching links:', linksError); return; }
 
-    // الخطوة 4: عرض الروابط في الصفحة
-    linksContainer.innerHTML = ''; // تفريغ الحاوية
+    linksContainer.innerHTML = '';
     if (links.length > 0) {
         links.forEach(link => {
             const linkElement = document.createElement('a');
@@ -61,25 +61,14 @@ async function loadUserProfile(username) {
 }
 
 // --- تشغيل الكود ---
-
-// قراءة اسم المستخدم من رابط الصفحة (URL)
-const welcomeView = document.getElementById('welcome-view');
-const profileView = document.getElementById('profile-view');
-
-// قراءة اسم المستخدم من رابط الصفحة (URL)
 const params = new URLSearchParams(window.location.search);
 const urlUsername = params.get('user');
 
 if (urlUsername) {
-    // إذا كان هناك اسم مستخدم في الرابط
-    // قم بإخفاء رسالة الترحيب وإظهار قسم الملف الشخصي، ثم ابدأ بتحميل البيانات
     welcomeView.style.display = 'none';
     profileView.style.display = 'block';
     loadUserProfile(urlUsername);
 } else {
-    // إذا لم يكن هناك اسم مستخدم في الرابط
-    // اترك رسالة الترحيب ظاهرة وقسم الملف الشخصي مخفياً (وهو الوضع الافتراضي)
-    // لا داعي لكتابة أي كود هنا لأن هذا هو الشكل الطبيعي للصفحة
-    console.log("No username in URL, showing welcome page.");
+    welcomeView.style.display = 'block';
+    profileView.style.display = 'none';
 }
-
