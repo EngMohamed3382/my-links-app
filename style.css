@@ -17,7 +17,7 @@ body {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* ============================================= */
@@ -143,3 +143,4 @@ p {
     .main-header .container, .dashboard-content .container { padding: 15px; }
     .card { padding: 20px; }
 }
+
