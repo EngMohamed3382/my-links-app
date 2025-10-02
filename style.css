@@ -90,3 +90,89 @@ p {
     background-color: #0c8ce9;
     color: white;
 }
+
+/* تصميم صفحة الدخول والتسجيل الجديدة */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.auth-card {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.auth-card h1 {
+    margin-bottom: 10px;
+}
+
+.auth-card #auth-subtitle {
+    margin-bottom: 30px;
+    color: #606770;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: right; /* لجعل "label" على اليمين */
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #4b4f56;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    box-sizing: border-box; /* لضمان أن padding لا يؤثر على العرض */
+}
+
+#auth-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background-color: #0c8ce9;
+    color: white;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#auth-btn:hover {
+    background-color: #0a73be;
+}
+
+.message {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #d93025; /* لون أحمر للخطأ */
+}
+
+.toggle-text {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.toggle-text a {
+    color: #0c8ce9;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.hidden {
+    display: none;
+}
