@@ -63,12 +63,23 @@ async function loadUserProfile(username) {
 // --- تشغيل الكود ---
 
 // قراءة اسم المستخدم من رابط الصفحة (URL)
+const welcomeView = document.getElementById('welcome-view');
+const profileView = document.getElementById('profile-view');
+
+// قراءة اسم المستخدم من رابط الصفحة (URL)
 const params = new URLSearchParams(window.location.search);
 const urlUsername = params.get('user');
 
 if (urlUsername) {
+    // إذا كان هناك اسم مستخدم في الرابط
+    // قم بإخفاء رسالة الترحيب وإظهار قسم الملف الشخصي، ثم ابدأ بتحميل البيانات
+    welcomeView.style.display = 'none';
+    profileView.style.display = 'block';
     loadUserProfile(urlUsername);
 } else {
-    document.body.innerHTML = '<h1>خطأ: لم يتم تحديد اسم المستخدم في الرابط.</h1><p>مثال على رابط صحيح: index.html?user=username</p>';
-
+    // إذا لم يكن هناك اسم مستخدم في الرابط
+    // اترك رسالة الترحيب ظاهرة وقسم الملف الشخصي مخفياً (وهو الوضع الافتراضي)
+    // لا داعي لكتابة أي كود هنا لأن هذا هو الشكل الطبيعي للصفحة
+    console.log("No username in URL, showing welcome page.");
 }
+
