@@ -168,3 +168,24 @@ p {
     font-weight: bold;
     cursor: pointer;
 }
+/* تصميم أزرار التحكم لصاحب الحساب */
+.owner-controls {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+.owner-button {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #1c1e21;
+    border: 1px solid #e4e6eb;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
