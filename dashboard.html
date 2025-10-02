@@ -1,4 +1,35 @@
-<div class="profile-section">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>أهلاً بك في لوحة التحكم</h1>
+            <p>من هنا يمكنك إدارة روابط صفحتك.</p>
+            <button id="logout-btn">تسجيل الخروج</button>
+        </header>
+        
+        <main>
+            <form id="add-link-form">
+                <h3>إضافة رابط جديد</h3>
+                <input type="text" id="link-title" placeholder="عنوان الرابط (مثلاً: صفحتي على فيسبوك)" required>
+                <input type="url" id="link-url" placeholder="الرابط الكامل (مثلاً: https://facebook.com/username)" required>
+                <button type="submit">إضافة الرابط</button>
+            </form>
+
+            <div class="links-section">
+                <h2>روابطي الحالية:</h2>
+                <div id="links-list">
+                    <p>جاري تحميل الروابط...</p>
+                </div>
+            </div>
+            <div class="profile-section">
     <h3>إعدادات الملف الشخصي</h3>
     
     <div class="avatar-upload-container">
@@ -15,40 +46,11 @@
         <button type="submit">حفظ التغييرات</button>
     </form>
 </div>
-<hr> ```
+            <hr>
+        </main>
+    </div>
 
-### **الخطوة الرابعة والخامسة: الكود الكامل لرفع وعرض الصورة**
-
-هنا سنقوم بتحديث ملفات `dashboard.js` و `main.js` و `style.css` لربط كل شيء معاً.
-
-**1. أضف التصميم الجديد في `style.css`:**
-افتح ملف `style.css` وأضف هذه الأكواد في نهايته:
-
-```css
-.avatar-upload-container {
-    text-align: center;
-    margin-bottom: 20px;
-}
-.avatar-preview {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid white;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    margin-bottom: 10px;
-}
-.button-like-label, #upload-btn {
-    display: inline-block;
-    background-color: #e4e6eb;
-    color: #4b4f56;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-}
-#upload-btn {
-    background-color: #0c8ce9;
-    color: white;
-}
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
