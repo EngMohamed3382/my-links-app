@@ -144,3 +144,27 @@ p {
     .card { padding: 20px; }
 }
 
+/* تصميم قسم رابط المشاركة */
+.share-link-container {
+    display: flex;
+    gap: 10px;
+}
+#shareable-link {
+    flex-grow: 1; /* يأخذ كل المساحة المتاحة */
+    background-color: #f0f2f5;
+    border: 1px solid #dddfe2;
+    padding: 10px;
+    border-radius: 6px;
+    color: #606770;
+    direction: ltr; /* لجعل الرابط يظهر من اليسار لليمين */
+    text-align: left;
+}
+#copy-link-btn {
+    padding: 10px 20px;
+    border: none;
+    background-color: #0c8ce9;
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
